@@ -27,11 +27,11 @@ public class EvolutionManager {
      * @return A list of lists, where each inner list represents a population of SensorConfig
      *         for each generation.
      */
-    public static List<List<SensorConfig>> evolveGenerations(int[][] c, int numberOfGenerations) {
+    public static List<List<SensorConfig>> evolveGenerations(int[][] c, int numberOfGenerations, int populationSize) {
         List<List<SensorConfig>> allGenerations = new ArrayList<>();
 
         // Generate the initial population and evaluate fitness
-        List<SensorConfig> initialPopulation = GenesGenerator.generateGenes(c);
+        List<SensorConfig> initialPopulation = GenesGenerator.generateGenes(c, populationSize);
         List<SensorConfig> evaluatedInitial = FitnessCalculator.evaluatePopulationFitness(initialPopulation);
 
         // Add the evaluated initial population to the generations list

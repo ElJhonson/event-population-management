@@ -3,7 +3,6 @@ package com.jhonson.service.algotithm;
 import com.jhonson.service.algotithm.evolution.EvolutionManager;
 import com.jhonson.service.algotithm.fitness.SensorManagerCost;
 import com.jhonson.service.algotithm.model.SensorConfig;
-import com.jhonson.service.algotithm.util.CsvParser;
 import com.jhonson.service.algotithm.util.PopulationUtils;
 
 import java.util.List;
@@ -34,7 +33,7 @@ public class Main {
         SensorManagerCost.CostConfig(COST_PLACES, COST_TRANSITION);
 
         // Evoluciona las generaciones de configuraciones de sensores (ajusta la cantidad de generaciones)
-        List<List<SensorConfig>> scf = EvolutionManager.evolveGenerations(d, 3);
+        List<List<SensorConfig>> scf = EvolutionManager.evolveGenerations(d, 3, 50);
 
         // Imprime las configuraciones por cada generación
         for (List<SensorConfig> sc : scf) {

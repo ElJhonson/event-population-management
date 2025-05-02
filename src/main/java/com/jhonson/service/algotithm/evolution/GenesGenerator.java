@@ -23,11 +23,11 @@ public class GenesGenerator {
      * @param c A 2D array representing configuration parameters.
      * @return A list of valid SensorConfig objects.
      */
-    public static List<SensorConfig> generateGenes(int[][] c) {
+    public static List<SensorConfig> generateGenes(int[][] c, int populationSize) {
         List<SensorConfig> validConfigs = new ArrayList<>();  // List to store valid sensor configurations.
 
         // Continue generating configurations until we have at least 99 valid ones.
-        while (validConfigs.size() < 99) {
+        while (validConfigs.size() < populationSize) {
             // Generate random measurable places and transitions.
             int[] places = PlaceTransitionGenerator.generateMeasurablePlaces(c.length);
             int[] transitions = PlaceTransitionGenerator.generateMeasurableTransitions(c[0].length);
