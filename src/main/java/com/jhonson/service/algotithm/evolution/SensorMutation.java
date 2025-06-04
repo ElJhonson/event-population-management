@@ -57,7 +57,7 @@ public class SensorMutation {
         }
 
         // If no mutation occurs, return the original configuration
-        return sensorConfig;
+        return nSC;
     }
 }
 

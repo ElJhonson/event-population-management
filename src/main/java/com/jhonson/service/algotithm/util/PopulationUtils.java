@@ -23,7 +23,7 @@ public class PopulationUtils {
      * @param population A list of SensorConfig objects representing the population.
      * @return A list of SensorConfig instances with the lowest fitness value.
      */
-    public static List<SensorConfig> getSensorConfigMin(List<SensorConfig> population) {
+    public static List<SensorConfig> getSensorsConfigMin(List<SensorConfig> population) {
         List<SensorConfig> configs = new ArrayList<>();
         float minValue = getMinValue(population);
         population.forEach(n -> {
@@ -33,6 +33,14 @@ public class PopulationUtils {
         });
         return configs;
     }
+
+    public static SensorConfig getSensorConfigMin(List<SensorConfig> population) {
+        return Collections.min(population);
+    }
+
+
+
+
 
     /**
      * Finds the minimum fitness value within a given population of sensor configurations.

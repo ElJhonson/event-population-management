@@ -28,6 +28,7 @@ public class EvolutionManager {
      *         for each generation.
      */
     public static List<List<SensorConfig>> evolveGenerations(int[][] c, int numberOfGenerations, int populationSize) {
+        long startTime = System.nanoTime(); // Inicio del tiempo
         List<List<SensorConfig>> allGenerations = new ArrayList<>();
 
         // Generate the initial population and evaluate fitness
@@ -43,13 +44,17 @@ public class EvolutionManager {
             allGenerations.add(nextGen);
         }
 
+        long endTime = System.nanoTime(); // Fin del tiempo
+        long durationInMillis = (endTime - startTime) / 1_000_000;
+
+        System.out.println("Tiempo total de evolución: " + durationInMillis + " ms");
         return allGenerations;
     }
 
     /**
      * Builds the next generation of sensor configurations based on the current population.
      * This method uses roulette selection for parent selection, performs crossover and mutation,
-     * and checks for event detectability to ensure valid offspring are added to the next generation.
+     * and checks for event detectability to ensure valid child are added to the next generation.
      *
      * @param c                  A 2D array representing the configuration parameters.
      * @param currentPopulation  The population of SensorConfig objects for the current generation.
@@ -61,18 +66,21 @@ public class EvolutionManager {
         SensorConfig sc;
         SensorConfig sc1;
 
-        // Generate offspring until the next generation is the same size as the current population
+        // Generate child until the next generation is the same size as the current population
         while (nextGeneration.size() < currentPopulation.size()) {
             sc = RouletteSelection.selectRoulette(currentPopulation);  // Select parent 1
             sc1 = RouletteSelection.selectRoulette(currentPopulation); // Select parent 2
 
-            // Perform crossover and mutation to generate offspring
-            for (SensorConfig offSpring : SensorCrossover.performCrossover(sc, sc1)) {
-                SensorMutation.mutation(offSpring);  // Apply mutation to the offspring
+            // Perform crossover and mutation to generate child
+            for (SensorConfig child : SensorCrossover.performCrossover(sc, sc1)) {
 
-                // Check if the offspring is valid before adding to the next generation
+                SensorConfig offSpring = SensorMutation.mutation(child);
+                // Check if the child is valid before adding to the next generation
                 if (EventDetectabilityChecker.checkEventDetectability(c, offSpring.getPlaceConfig(), offSpring.getTransConfig())) {
                     nextGeneration.add(offSpring);
+                }
+                if (nextGeneration.size() >= currentPopulation.size()) {
+                    break;
                 }
             }
         }
