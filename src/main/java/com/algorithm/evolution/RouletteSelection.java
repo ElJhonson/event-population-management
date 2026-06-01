@@ -1,6 +1,7 @@
-package com.jhonson.service.algotithm.evolution;
+package com.algorithm.evolution;
 
-import com.jhonson.service.algotithm.model.SensorConfig;
+
+import com.algorithm.model.SensorConfig;
 
 import java.util.List;
 import java.util.Random;

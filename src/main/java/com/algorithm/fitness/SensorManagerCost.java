@@ -1,4 +1,4 @@
-package com.jhonson.service.algotithm.fitness;
+package com.algorithm.fitness;
 
 /**
  * Utility class for managing the cost configuration of places and transitions

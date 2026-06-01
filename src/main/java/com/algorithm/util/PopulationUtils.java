@@ -1,6 +1,6 @@
-package com.jhonson.service.algotithm.util;
+package com.algorithm.util;
 
-import com.jhonson.service.algotithm.model.SensorConfig;
+import com.algorithm.model.SensorConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;

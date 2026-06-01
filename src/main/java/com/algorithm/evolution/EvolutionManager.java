@@ -1,8 +1,9 @@
-package com.jhonson.service.algotithm.evolution;
+package com.algorithm.evolution;
 
-import com.jhonson.service.algotithm.fitness.EventDetectabilityChecker;
-import com.jhonson.service.algotithm.fitness.FitnessCalculator;
-import com.jhonson.service.algotithm.model.SensorConfig;
+
+import com.algorithm.fitness.EventDetectabilityChecker;
+import com.algorithm.fitness.FitnessCalculator;
+import com.algorithm.model.SensorConfig;
 
 import java.util.ArrayList;
 import java.util.List;

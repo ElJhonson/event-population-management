@@ -1,4 +1,4 @@
-package com.jhonson.service.algotithm.util;
+package com.algorithm.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

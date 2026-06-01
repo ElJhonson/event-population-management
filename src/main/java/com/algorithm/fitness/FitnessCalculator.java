@@ -1,9 +1,7 @@
-package com.jhonson.service.algotithm.fitness;
+package com.algorithm.fitness;
 
-import com.jhonson.service.algotithm.model.SensorConfig;
+import com.algorithm.model.SensorConfig;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 /**

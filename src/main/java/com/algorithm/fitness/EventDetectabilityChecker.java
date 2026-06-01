@@ -1,4 +1,4 @@
-package com.jhonson.service.algotithm.fitness;
+package com.algorithm.fitness;
 
 import java.util.ArrayList;
 import java.util.List;
