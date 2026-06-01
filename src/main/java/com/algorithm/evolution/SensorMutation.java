@@ -12,6 +12,8 @@ import java.util.Random;
  */
 public class SensorMutation {
 
+    private static final Random RANDOM = new Random();
+
     /**
      * Performs mutation on the provided sensor configuration by randomly flipping
      * a "place" and a "transition" in the configuration with a 1% chance.
@@ -22,21 +24,17 @@ public class SensorMutation {
      */
     public static SensorConfig mutation(SensorConfig sensorConfig) {
 
-        Random random = new Random();
-        // 1% chance for mutation (random number between 0 and 99)
-        int chance = random.nextInt(100);
-
         // Clone the original configuration to avoid modifying the original object
         SensorConfig nSC = sensorConfig.clone();
 
-        // If mutation happens (when chance equals 50)
-        if (chance == 50) {
+        // 1% chance for mutation
+        if (RANDOM.nextInt(100) < 1) {
             int placeSize = nSC.getPlaceConfig().length;
             int transitionSize = nSC.getTransConfig().length;
 
             // Select random mutation points for places and transitions
-            int mutationPointPlaces = random.nextInt(placeSize);
-            int mutationPointTransitions = random.nextInt(transitionSize);
+            int mutationPointPlaces = RANDOM.nextInt(placeSize);
+            int mutationPointTransitions = RANDOM.nextInt(transitionSize);
 
             int[] scPlaces = nSC.getPlaceConfig();
             int[] scTransitions = nSC.getTransConfig();
@@ -52,12 +50,10 @@ public class SensorMutation {
             // Recalculate the fitness of the mutated sensor configuration
             FitnessCalculator.computeFitness(nSC);
 
-            // Return the mutated configuration
             return nSC;
         }
 
-        // If no mutation occurs, return the original configuration
+        // If no mutation occurs, return the cloned configuration
         return nSC;
     }
 }
-
