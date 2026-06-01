@@ -16,39 +16,46 @@ public class EvolutionManager {
 
     /**
      * Evolves a population of sensor configurations for a given number of generations.
-     * The evolution process involves generating initial genes, evaluating fitness, and
-     * iteratively generating new generations.
-     *
-     * <p>This method orchestrates the full evolutionary process, from the initial population
-     * to the final generation.</p>
+     * Only the best configuration per generation is stored to avoid memory accumulation.
      *
      * @param c                   A 2D array representing the Petri Net matrix.
      * @param numberOfGenerations The number of generations to evolve the population through.
      * @param populationSize      The number of sensor configurations per generation.
      * @param fitnessCalculator   The fitness calculator instance used to evaluate configurations.
-     * @return A list of lists, where each inner list represents a population of SensorConfig
-     *         for each generation.
+     * @return A list of the best SensorConfig per generation.
      */
-    public static List<List<SensorConfig>> evolveGenerations(int[][] c, int numberOfGenerations, int populationSize, FitnessCalculator fitnessCalculator) {
+    public static List<SensorConfig> evolveGenerations(int[][] c, int numberOfGenerations, int populationSize, FitnessCalculator fitnessCalculator) {
         long startTime = System.nanoTime();
-        List<List<SensorConfig>> allGenerations = new ArrayList<>();
+        List<SensorConfig> bestPerGeneration = new ArrayList<>();
 
         // Generate the initial population and evaluate fitness
-        List<SensorConfig> initialPopulation = GenesGenerator.generateGenes(c, populationSize);
-        List<SensorConfig> evaluatedInitial = fitnessCalculator.evaluatePopulationFitness(initialPopulation);
+        List<SensorConfig> currentPopulation = GenesGenerator.generateGenes(c, populationSize);
+        fitnessCalculator.evaluatePopulationFitness(currentPopulation);
 
-        // Add the evaluated initial population to the generations list
-        allGenerations.add(evaluatedInitial);
+        // Store the best of the initial population
+        bestPerGeneration.add(getBest(currentPopulation));
 
         // Evolve the population for the specified number of generations
         for (int i = 1; i <= numberOfGenerations; i++) {
-            List<SensorConfig> nextGen = nextGenerationBuilder(c, allGenerations.get(i - 1), fitnessCalculator);
-            allGenerations.add(nextGen);
+            currentPopulation = nextGenerationBuilder(c, currentPopulation, fitnessCalculator);
+            bestPerGeneration.add(getBest(currentPopulation));
         }
 
         long durationInMillis = (System.nanoTime() - startTime) / 1_000_000;
         System.out.println("Total evolution time: " + durationInMillis + " ms");
-        return allGenerations;
+        return bestPerGeneration;
+    }
+
+    /**
+     * Returns the best sensor configuration from a population.
+     *
+     * @param population The population to search.
+     * @return The SensorConfig with the lowest fitness value.
+     */
+    private static SensorConfig getBest(List<SensorConfig> population) {
+        return population.stream()
+                .min(SensorConfig::compareTo)
+                .orElseThrow();
     }
 
     /**
