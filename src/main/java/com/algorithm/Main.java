@@ -50,25 +50,70 @@ public class Main {
         SensorManagerCost costConfig = new SensorManagerCost(COST_PLACES, COST_TRANSITION);
         FitnessCalculator fitnessCalculator = new FitnessCalculator(costConfig);
 
-        // Evolve sensor configurations over multiple runs
+        System.out.println("╔══════════════════════════════════════════════════════════════╗");
+        System.out.println("║        Sensor Placement Optimizer — Genetic Algorithm        ║");
+        System.out.println("║     Petri Net-based optimization for event detectability     ║");
+        System.out.println("╚══════════════════════════════════════════════════════════════╝");
+        System.out.println("Matrix size: " + matrix.length + " places x " + matrix[0].length + " transitions");
+        System.out.println();
+
+        SensorConfig globalBest = null;
+
+        // Evolve sensor configurations over multiple independent runs
         for (int i = 0; i < 10; i++) {
-            System.out.println("================================= Run: " + (i + 1) + " =================================");
+            System.out.println("┌─────────────────────────────────────────────────────────────┐");
+            System.out.println("│                          Run " + (i + 1) + " of 10                          │");
+            System.out.println("└─────────────────────────────────────────────────────────────┘");
 
             List<SensorConfig> bestPerGeneration = EvolutionManager.evolveGenerations(matrix, 100, 1000, fitnessCalculator);
 
-            int generation = 1;
-            for (SensorConfig config : bestPerGeneration) {
-                System.out.println("====================== Generation: " + generation++ + " ======================");
-                System.out.println("Fitness:  " + config.getFitness());
-                System.out.println("Places:   " + OneZeroToPositions.positionCount(config.getPlaceConfig()));
-                System.out.println("Trans:    " + OneZeroToPositions.positionCount(config.getTransConfig()));
-                System.out.println("Inverse:  " + Arrays.toString(
-                        OneZeroToPositions.positionCountInverse(
-                                OneZeroToPositions.positionCount(config.getTransConfig()),
-                                config.getTransConfig().length
-                        )
-                ));
+            // Show fitness evolution every 10 generations
+            System.out.println("  Fitness evolution (best per generation):");
+            for (int g = 0; g < bestPerGeneration.size(); g++) {
+                if (g % 10 == 0) {
+                    System.out.printf("  Generation %3d → Fitness: %.1f%n", g, bestPerGeneration.get(g).getFitness());
+                }
+            }
+
+            // Get the best config of this run
+            SensorConfig runBest = bestPerGeneration.stream()
+                    .min(SensorConfig::compareTo)
+                    .orElseThrow();
+
+            System.out.println();
+            System.out.println("  ── Best result this run ──────────────────────────────────");
+            System.out.println("  Fitness:             " + runBest.getFitness());
+            System.out.println("  Sensor places:       " + OneZeroToPositions.positionCount(runBest.getPlaceConfig()));
+            System.out.println("  Sensor transitions:  " + OneZeroToPositions.positionCount(runBest.getTransConfig()));
+            System.out.println("  Transition vector:   " + Arrays.toString(
+                    OneZeroToPositions.positionCountInverse(
+                            OneZeroToPositions.positionCount(runBest.getTransConfig()),
+                            runBest.getTransConfig().length
+                    )
+            ));
+            System.out.println();
+
+            // Track global best across all runs
+            if (globalBest == null || runBest.getFitness() < globalBest.getFitness()) {
+                globalBest = runBest;
             }
         }
+
+        // Print the global best result across all runs
+        System.out.println("╔══════════════════════════════════════════════════════════════╗");
+        System.out.println("║                     Global Best Result                      ║");
+        System.out.println("╚══════════════════════════════════════════════════════════════╝");
+        System.out.println("  Fitness:             " + globalBest.getFitness());
+        System.out.println("  Sensor places:       " + OneZeroToPositions.positionCount(globalBest.getPlaceConfig()));
+        System.out.println("  Sensor transitions:  " + OneZeroToPositions.positionCount(globalBest.getTransConfig()));
+        System.out.println("  Transition vector:   " + Arrays.toString(
+                OneZeroToPositions.positionCountInverse(
+                        OneZeroToPositions.positionCount(globalBest.getTransConfig()),
+                        globalBest.getTransConfig().length
+                )
+        ));
+        System.out.println("  Total sensors used:  " +
+                (OneZeroToPositions.positionCount(globalBest.getPlaceConfig()).size() +
+                        OneZeroToPositions.positionCount(globalBest.getTransConfig()).size()));
     }
 }
