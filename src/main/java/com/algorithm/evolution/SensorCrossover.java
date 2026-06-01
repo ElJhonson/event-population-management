@@ -14,29 +14,31 @@ import java.util.Random;
  */
 public class SensorCrossover {
 
+    private static final Random RANDOM = new Random();
+
     /**
      * Performs the crossover between two parent sensor configurations to generate offspring.
      * The crossover happens with a 70% chance, where a random crossover point is chosen for both
      * the "places" and "transitions" arrays. The offspring inherit configurations from both parents.
      * If crossover does not occur, the parents are returned as offspring.
      *
-     * @param parent1 The first parent sensor configuration.
-     * @param parent2 The second parent sensor configuration.
+     * @param parent1           The first parent sensor configuration.
+     * @param parent2           The second parent sensor configuration.
+     * @param fitnessCalculator The fitness calculator instance used to evaluate offspring.
      * @return A list of the generated offspring sensor configurations, or the parents if no crossover happens.
      */
-    public static List<SensorConfig> performCrossover(SensorConfig parent1, SensorConfig parent2) {
-        Random rand = new Random();
+    public static List<SensorConfig> performCrossover(SensorConfig parent1, SensorConfig parent2, FitnessCalculator fitnessCalculator) {
 
         // Determine the crossover chance (70% chance for crossover)
-        int chance = rand.nextInt(1000);
+        int chance = RANDOM.nextInt(1000);
 
         if (chance < 700) {
             int placeSize = parent1.getPlaceConfig().length;
             int transitionSize = parent1.getTransConfig().length;
 
             // Select crossover points for "places" and "transitions"
-            int crossoverPointPlaces = rand.nextInt(placeSize);
-            int crossoverPointTransitions = rand.nextInt(transitionSize);
+            int crossoverPointPlaces = RANDOM.nextInt(placeSize);
+            int crossoverPointTransitions = RANDOM.nextInt(transitionSize);
 
             // Arrays for offspring configurations
             int[] placesChild1 = new int[placeSize];
@@ -73,11 +75,10 @@ public class SensorCrossover {
             List<SensorConfig> children = Arrays.asList(child1, child2);
 
             // Evaluate the fitness of the offspring
-            return FitnessCalculator.evaluatePopulationFitness(children);
-        } else {
-            // If no crossover, return the parents as the offspring
-            return Arrays.asList(parent1, parent2);
+            return fitnessCalculator.evaluatePopulationFitness(children);
         }
+
+        // If no crossover, return the parents as the offspring
+        return Arrays.asList(parent1, parent2);
     }
 }
-

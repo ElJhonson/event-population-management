@@ -7,8 +7,8 @@ import java.util.Random;
 
 /**
  * Implements the mutation operation on a given sensor configuration.
- * A mutation occurs with a 1% chance (randomly) by flipping a "place" and a "transition" in the sensor configuration.
- * The fitness of the mutated configuration is recalculated.
+ * A mutation occurs with a 1% chance by flipping a "place" and a "transition"
+ * in the sensor configuration. The fitness of the mutated configuration is recalculated.
  */
 public class SensorMutation {
 
@@ -19,10 +19,11 @@ public class SensorMutation {
      * a "place" and a "transition" in the configuration with a 1% chance.
      * If a mutation occurs, the fitness of the mutated configuration is recalculated.
      *
-     * @param sensorConfig The sensor configuration to mutate.
+     * @param sensorConfig      The sensor configuration to mutate.
+     * @param fitnessCalculator The fitness calculator instance used to recompute fitness.
      * @return The mutated sensor configuration, or the original if no mutation occurred.
      */
-    public static SensorConfig mutation(SensorConfig sensorConfig) {
+    public static SensorConfig mutation(SensorConfig sensorConfig, FitnessCalculator fitnessCalculator) {
 
         // Clone the original configuration to avoid modifying the original object
         SensorConfig nSC = sensorConfig.clone();
@@ -48,7 +49,7 @@ public class SensorMutation {
             nSC.setTransConfig(scTransitions);
 
             // Recalculate the fitness of the mutated sensor configuration
-            FitnessCalculator.computeFitness(nSC);
+            fitnessCalculator.computeFitness(nSC);
 
             return nSC;
         }

@@ -1,6 +1,7 @@
 package com.algorithm;
 
 import com.algorithm.evolution.EvolutionManager;
+import com.algorithm.fitness.FitnessCalculator;
 import com.algorithm.fitness.SensorManagerCost;
 import com.algorithm.model.SensorConfig;
 import com.algorithm.util.CsvParser;
@@ -40,22 +41,24 @@ public class Main {
                 300f, 300f, 300f, 300f, 300f, 300f, 300f, 300f, 300f, 300f, 300f, 300f
         };
 
-        SensorManagerCost.CostConfig(COST_PLACES, COST_TRANSITION);
+        // Create cost configuration and fitness calculator
+        SensorManagerCost costConfig = new SensorManagerCost(COST_PLACES, COST_TRANSITION);
+        FitnessCalculator fitnessCalculator = new FitnessCalculator(costConfig);
 
         // Evolve sensor configurations over multiple runs
         for (int i = 0; i < 10; i++) {
             System.out.println("================================= Run: " + (i + 1) + " =================================");
 
-            List<List<SensorConfig>> scf = EvolutionManager.evolveGenerations(matrix, 100, 1000);
+            List<List<SensorConfig>> scf = EvolutionManager.evolveGenerations(matrix, 100, 1000, fitnessCalculator);
 
             for (List<SensorConfig> sc : scf) {
                 System.out.println("====================== Next Generation ======================");
 
                 SensorConfig config = PopulationUtils.getSensorConfigMin(sc);
-                System.out.println("Fitness: " + config.getFitness());
-                System.out.println("Places:  " + OneZeroToPositions.positionCount(config.getPlaceConfig()));
-                System.out.println("Trans:   " + OneZeroToPositions.positionCount(config.getTransConfig()));
-                System.out.println("Inverse: " + Arrays.toString(
+                System.out.println("Fitness:  " + config.getFitness());
+                System.out.println("Places:   " + OneZeroToPositions.positionCount(config.getPlaceConfig()));
+                System.out.println("Trans:    " + OneZeroToPositions.positionCount(config.getTransConfig()));
+                System.out.println("Inverse:  " + Arrays.toString(
                         OneZeroToPositions.positionCountInverse(
                                 OneZeroToPositions.positionCount(config.getTransConfig()),
                                 config.getTransConfig().length
