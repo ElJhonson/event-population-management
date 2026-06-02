@@ -192,7 +192,7 @@ Matrix size: 34 places x 23 transitions
 ## 👤 Author
 
 **Luis Angel Alvarez Martinez**
-📧 [angel.alvarez20@hotmail.com](mailto:angel.alvarez20@hotmail.com)
+📧 [luisangel.alvarezmtzgmail.com](mailto:luisangel.alvarezmtzgmail.com)
 
 ---
 
