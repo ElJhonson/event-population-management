@@ -1,28 +1,59 @@
-# 📱 MediTrack Android
+# 🔬 Sensor Placement Optimizer
 
-![Kotlin](https://img.shields.io/badge/Kotlin-100%25-7F52FF?logo=kotlin&logoColor=white)
-![Jetpack Compose](https://img.shields.io/badge/Jetpack%20Compose-UI-4285F4?logo=jetpackcompose&logoColor=white)
-![Android](https://img.shields.io/badge/Android-Native-3DDC84?logo=android&logoColor=white)
-![MinSdk](https://img.shields.io/badge/minSdk-30-brightgreen)
-![Version](https://img.shields.io/badge/Version-0.0.1-orange)
+![Java](https://img.shields.io/badge/Java-23-orange?logo=openjdk)
+![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven)
+![Algorithm](https://img.shields.io/badge/Algorithm-Genetic-blueviolet)
+![Topic](https://img.shields.io/badge/Topic-Petri%20Nets-informational)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-Native Android client for the MediTrack medication reminder platform. Built with Kotlin and Jetpack Compose, featuring exact alarms via AlarmManager, background sync via WorkManager, full-screen intent notifications, and JWT-authenticated communication with the [MediTrack REST API](https://github.com/LuisAlvarezMtz/meditrack-api).
+A genetic algorithm that optimizes sensor placement for industrial process monitoring. Generates and evolves sensor populations using **Petri Net matrices** to minimize total sensor cost while preserving full event detectability across all monitored transitions.
 
 ---
 
-## 🚀 Features
+## 🧠 Problem Statement
 
-- **JWT Authentication** — Secure login with token persistence via DataStore
-- **Role-based Experience** — Separate flows for Patients and Caregivers
-- **Medication Management** — Full CRUD for medications and schedules
-- **Exact Alarms** — Precise reminder delivery using AlarmManager with exact alarm permissions
-- **Alarm Queue** — Manages multiple overlapping alarms reliably
-- **Full Screen Intent** — Reminders appear as full-screen alerts even on locked screens
-- **Foreground Alarm Service** — Keeps alarms alive even when the app is closed
-- **Background Sync** — WorkManager + RetryWorker keeps local data in sync with the backend
-- **Boot Recovery** — BootReceiver reschedules all alarms after device restart
-- **History View** — Log of past medication reminders and actions
+In industrial process monitoring, instrumenting every place and transition of a system is costly and redundant. The goal is to find the **minimum-cost subset of sensor placements** such that every observable event in the process can still be detected — a classic combinatorial optimization problem.
+
+This project models the system as a **Petri Net** (places × transitions incidence matrix), represents candidate sensor configurations as binary vectors, and uses a **genetic algorithm** to evolve toward the optimal cost solution.
+
+---
+
+## ⚙️ How It Works
+
+### 1. Petri Net Representation
+The monitored system is encoded as an incidence matrix **C** of size `places × transitions`:
+- Each row represents a **place** in the Petri Net
+- Each column represents a **transition**
+- Values `{-1, 0, 1}` encode consumption, neutrality, or production of tokens
+
+The built-in example matrix is **34 places × 23 transitions**, loaded from `matriz.csv`.
+
+### 2. Cost Model
+Each place and transition has an associated placement cost:
+- **Places:** costs between `30f – 50f` per sensor
+- **Transitions:** fixed cost of `300f` per sensor
+
+The fitness function minimizes total cost while ensuring all events remain detectable.
+
+### 3. Genetic Algorithm
+
+The optimizer runs **10 independent runs**, each evolving **100 individuals over 1000 generations**:
+
+| Operator | Class | Description |
+|---|---|---|
+| **Initialization** | `GenesGenerator` | Generates random binary sensor configurations |
+| **Fitness** | `FitnessCalculator` + `EventDetectabilityChecker` | Evaluates cost and full event observability |
+| **Selection** | `RouletteSelection` | Roulette wheel (fitness-proportionate) selection |
+| **Crossover** | `SensorCrossover` | Combines parent place/transition vectors |
+| **Mutation** | `SensorMutation` | Randomly flips sensor bits to explore search space |
+| **Evolution** | `EvolutionManager` | Orchestrates the full generational loop |
+
+### 4. Output
+After all runs, the algorithm prints the **global best** sensor configuration:
+- Fitness score (total cost)
+- Number of instrumented places and transitions
+- Transition placement vector (binary)
+- Total sensors used
 
 ---
 
@@ -30,97 +61,40 @@ Native Android client for the MediTrack medication reminder platform. Built with
 
 | Layer | Technology |
 |---|---|
-| Language | Kotlin |
-| UI | Jetpack Compose + Material 3 |
-| Networking | Retrofit 2 + OkHttp (logging interceptor) |
-| JSON | Gson Converter |
-| Authentication | JWT + OkHttp Interceptor + DataStore |
-| Local Storage | DataStore Preferences + Room |
-| Alarms | AlarmManager (exact alarms) |
-| Foreground Service | AlarmForegroundService + AlarmSoundService |
-| Background Tasks | WorkManager + SyncWorker + RetryWorker |
-| Notifications | Full Screen Intent + NotificationManager |
-| Architecture | MVVM (ViewModel + LiveData + Compose) |
-| Build System | Gradle (KTS) + Version Catalog |
+| Language | Java 23 |
+| Build | Maven |
+| Architecture | OOP — layered packages (evolution, fitness, model, util) |
+| Paradigm | Genetic Algorithm + Petri Net theory |
+| Input | CSV matrix (`matriz.csv`) with fallback to hardcoded example |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-app/src/main/java/com/example/meditrackservice/
-├── alarm/
-│   ├── ActionReceiver          # Handles notification action buttons
-│   ├── AlarmActivity           # Full-screen alarm UI
-│   ├── AlarmForegroundService  # Keeps alarm alive when app is closed
-│   ├── AlarmQueue              # Manages multiple scheduled alarms
-│   ├── AlarmReceiver           # BroadcastReceiver triggered by AlarmManager
-│   ├── AlarmScheduler          # Schedules exact alarms
-│   ├── AlarmScreen.kt          # Compose screen shown on alarm trigger
-│   ├── AlarmSoundService       # Plays alarm sound as foreground service
-│   ├── BootReceiver            # Reschedules alarms after device reboot
-│   └── OmitirAlarmaWorker      # Worker to dismiss/skip an alarm
-├── data/
-│   ├── api/
-│   │   ├── ApiService          # Retrofit interface (all endpoints)
-│   │   ├── AuthInterceptor     # Attaches JWT to every request
-│   │   └── RetrofitClient      # Retrofit + OkHttp setup
-│   ├── local/                  # Room database and DAOs
-│   └── model/                  # Data models / DTOs
-├── sync/
-│   ├── RetryScheduler          # Schedules retry attempts
-│   ├── RetryWorker             # WorkManager worker for failed requests
-│   ├── SyncScheduler           # Schedules periodic background sync
-│   └── SyncWorker              # WorkManager worker for data sync
-└── ui/
-    ├── historial/
-    │   ├── HistorialActivity
-    │   ├── HistorialScreen.kt
-    │   └── HistorialViewModel.kt
-    ├── login/
-    │   ├── LoginActivity
-    │   ├── LoginScreen.kt
-    │   ├── LoginViewModel.kt
-    │   └── LoginViewModelFactory
-    ├── main/
-    │   ├── AlarmaViewModel.kt
-    │   ├── AlarmaViewModelFactory
-    │   ├── MainActivity
-    │   └── MainScreen.kt
-    ├── splash/
-    │   └── SplashActivity.kt
-    └── theme/                  # App theme, colors, typography
-```
-
----
-
-## ⚙️ Configuration
-
-The API base URL is defined in `RetrofitClient`:
-
-```kotlin
-object RetrofitClient {
-    private const val BASE_URL_LOCAL  = "http://192.168.1.113:8080/"
-    private const val BASE_URL_RENDER = "https://meditrackwebappback.onrender.com/"
-
-    const val BASE_URL = BASE_URL_RENDER  // Switch to BASE_URL_LOCAL for local dev
-}
-```
-
-### Android Permissions
-
-```xml
-<uses-permission android:name="android.permission.INTERNET" />
-<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-<uses-permission android:name="android.permission.WAKE_LOCK" />
-<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-<uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-<uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
-<uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+sensor-placement-optimizer/
+├── src/main/java/com/algorithm/
+│   ├── evolution/
+│   │   ├── EvolutionManager        # Orchestrates generational evolution loop
+│   │   ├── GenesGenerator          # Random population initialization
+│   │   ├── RouletteSelection       # Fitness-proportionate parent selection
+│   │   ├── SensorCrossover         # Crossover operator for sensor configs
+│   │   └── SensorMutation          # Mutation operator (bit flip)
+│   ├── fitness/
+│   │   ├── EventDetectabilityChecker  # Validates full event observability
+│   │   ├── FitnessCalculator          # Computes total placement cost
+│   │   └── SensorManagerCost          # Holds place/transition cost arrays
+│   ├── model/
+│   │   ├── PlaceTransitionGenerator   # Generates place/transition configs
+│   │   └── SensorConfig               # Represents a single sensor placement candidate
+│   ├── util/
+│   │   ├── CsvParser               # Loads incidence matrix from CSV file
+│   │   ├── OneZeroToPositions      # Converts binary vector to active positions
+│   │   └── PopulationUtils         # Population-level helper methods
+│   └── Main.java                   # Entry point — runs 10 evolution cycles
+├── matriz.csv                      # Petri Net incidence matrix (34 places × 23 transitions)
+├── pom.xml
+└── .gitignore
 ```
 
 ---
@@ -129,71 +103,89 @@ object RetrofitClient {
 
 ### Prerequisites
 
-- Android Studio Hedgehog or later
-- JDK 11+
-- minSdk **30** / targetSdk **36**
-- A running instance of the [MediTrack API](https://github.com/LuisAlvarezMtz/meditrack-api)
+- Java 23+
+- Maven 3.8+
 
 ### Steps
 
 ```bash
 # Clone the repository
-git clone https://github.com/LuisAlvarezMtz/meditrack-android.git
+git clone https://github.com/LuisAlvarezMtz/sensor-placement-optimizer.git
+cd sensor-placement-optimizer
 
-# Open in Android Studio
-# File → Open → select the project folder
+# Build the project
+mvn clean compile
 
-# For local development, switch BASE_URL in RetrofitClient:
-# const val BASE_URL = BASE_URL_LOCAL
-
-# Run → Run 'app' or press Shift+F10
+# Run
+mvn exec:java -Dexec.mainClass="com.algorithm.Main"
 ```
 
-> ⚠️ For exact alarms to work on Android 12+, the user must grant the `SCHEDULE_EXACT_ALARM` permission manually in device settings (Settings → Apps → Special app access → Alarms & reminders).
+### CSV Matrix Input
+
+By default, `Main.java` loads the matrix from a hardcoded local path. To use your own matrix, update the path in `Main.java`:
+
+```java
+String csvPath = "path/to/your/matriz.csv";
+```
+
+If the file is not found, the algorithm falls back to the built-in 5×4 example matrix.
 
 ---
 
-## 🔔 Alarm & Notification System
+## 📊 Built-in Matrix
 
-Reminders are scheduled using **AlarmManager** with exact timing for precise delivery.
-
-When a reminder fires:
-1. `AlarmReceiver` (BroadcastReceiver) catches the alarm
-2. `AlarmForegroundService` starts to keep the process alive
-3. `AlarmSoundService` plays the alarm sound
-4. A **Full Screen Intent** launches `AlarmActivity` on the locked screen
-5. User can dismiss or snooze via `ActionReceiver`
-6. `BootReceiver` reschedules all pending alarms after device reboot
-
-**Background sync** is handled separately by `SyncWorker` and `RetryWorker` via WorkManager.
-
----
-
-## 🔐 Authentication Flow
+The included `matriz.csv` encodes a real industrial process as a **34 × 23 Petri Net incidence matrix** (34 places, 23 transitions). Values are `{-1, 0, 1}`:
 
 ```
-1. SplashActivity checks for stored JWT in DataStore
-2. If valid  → navigate to MainActivity
-3. If missing → navigate to LoginActivity
-4. Login with phone + password → receive JWT from API
-5. Token stored in DataStore via AuthInterceptor
-6. All requests automatically include Authorization: Bearer <token>
+Place 1:  -1  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0
+Place 2:   1 -1 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+Place 3:   0  1  0 -1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+...        (34 rows × 23 columns)
 ```
 
 ---
 
-## 📦 Release
+## 📈 Sample Output
 
-| Version | Date | Notes |
-|---|---|---|
-| [0.0.1](https://github.com/LuisAlvarezMtz/meditrack-android/releases/tag/0.0.1) | Apr 2026 | Initial release |
+```
+╔══════════════════════════════════════════════════════════════╗
+║        Sensor Placement Optimizer — Genetic Algorithm        ║
+║     Petri Net-based optimization for event detectability     ║
+╚══════════════════════════════════════════════════════════════╝
+Matrix size: 34 places x 23 transitions
+
+┌─────────────────────────────────────────────────────────────┐
+│                          Run 1 of 10                        │
+└─────────────────────────────────────────────────────────────┘
+  Generation   0 → Fitness: 2850.0
+  Generation  10 → Fitness: 2400.0
+  ...
+  Generation 990 → Fitness: 1200.0
+
+  ── Best result this run ──────────────────────────────────
+  Fitness:             1200.0
+  Sensor places:       [2, 5, 9]
+  Sensor transitions:  [1, 4, 7, 12]
+  Transition vector:   [0, 1, 0, 0, 1, 0, 0, 1, ...]
+
+╔══════════════════════════════════════════════════════════════╗
+║                     Global Best Result                       ║
+╚══════════════════════════════════════════════════════════════╝
+  Fitness:             1150.0
+  Sensor places:       [2, 9]
+  Sensor transitions:  [1, 4, 7, 12]
+  Total sensors used:  6
+```
 
 ---
 
-## 🔗 Related Repositories
+## 📚 Concepts
 
-- [`meditrack-api`](https://github.com/LuisAlvarezMtz/meditrack-api) — Spring Boot REST API backend
-- [`meditrack-web`](https://github.com/LuisAlvarezMtz/meditrack-web) — Vanilla JS web client
+- **Petri Nets** — mathematical modeling language for distributed systems and industrial processes
+- **Incidence Matrix** — encodes place-transition relationships as `{-1, 0, 1}` values
+- **Genetic Algorithms** — metaheuristic inspired by natural selection for combinatorial optimization
+- **Event Detectability** — a system is fully observable if every transition firing is detected by at least one sensor
+- **Roulette Selection** — selection probability proportional to fitness, favoring lower-cost configurations
 
 ---
 
